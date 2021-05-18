@@ -1,0 +1,24 @@
+redis-cli --cluster create 172.19.0.6:7001 172.19.0.3:7002 172.19.0.2:7003 172.19.0.5:7004 172.19.0.7:7005  172.19.0.8:7000 --cluster-replicas 1
+
+
+for n in `seq 2 8` ; do  
+for m in `seq 1 8` ; do 
+redis-cli -h 172.19.0.${n}  -p 700${m} cluster me  172.19.0.8 7000  17000; 
+done; 
+done
+
+for n in `seq 2 8` ; do 
+for m in `seq 0 8` ; do 
+for nodeid in `redis-cli -h 172.19.0.${n}  -p 700${m} cluster nodes|awk '{print $1}'` ; do 
+redis-cli -h 172.19.0.${n}  -p 700${m} cluster forget ${nodeid}; 
+done
+done
+done
+
+for n in `seq 2 8` ; do 
+for m in `seq 0 8` ; do 
+for nodeid in `redis-cli -h 172.19.0.${n}  -p 700${m} cluster nodes|awk '{print $1}'` ; do 
+redis-cli -h 172.19.0.${n}  -p 700${m} cluster nodes|grep @; 
+done
+done
+done
